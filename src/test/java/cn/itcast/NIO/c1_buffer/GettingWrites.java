@@ -1,4 +1,4 @@
-package cn.itcast.NIO.c1;
+package cn.itcast.NIO.c1_buffer;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
