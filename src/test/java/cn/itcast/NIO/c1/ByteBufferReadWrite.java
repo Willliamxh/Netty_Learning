@@ -5,6 +5,12 @@ import java.nio.ByteBuffer;
 /**
  * @author XuHan
  * @date 2023/11/16 13:24
+ * 1.buffer写入数据方式：
+ *      -调用 channel 的 read 方法  int readBytes = channel.read(buf);（channel之前可以读一个文件之类的）
+ *      -调用 buffer 自己的 put 方法 buf.put((byte)127);
+ * 2.buffer读取数据的方式：
+ *          -调用 channel 的 write 方法（往channel里面写数据）
+ *          -调用 buffer 自己的 get 方法
  */
 public class ByteBufferReadWrite {
     public static void main(String[] args) {
