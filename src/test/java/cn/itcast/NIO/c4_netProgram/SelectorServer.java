@@ -51,7 +51,8 @@ public class SelectorServer {
             while (iterator.hasNext()){
                 SelectionKey selectionKey = iterator.next();
                 log.debug("key:{}", selectionKey);
-                //事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，这是因为 nio 底层使用的是水平触发
+                //事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，
+                // 这是因为 nio 底层使用的是水平触发(只要没完成,一直都会触发事件)
                 // ServerSocketChannel channel = (ServerSocketChannel) selectionKey.channel();
                 // SocketChannel socketChannel = channel.accept();
                 // log.debug("socketChannel:{}", socketChannel);
