@@ -43,16 +43,21 @@ public class SelectorServer {
         List<SocketChannel> channels = Lists.newArrayList();
         while (true){
             // 我怎么知道有没有发生事件？ 用select方法。没有事件发生，selector阻塞；有事件发生了，线程才向下运行。
+            log.info("waiting ...");
+            // select在事件未处理时,不会阻塞
             selector.select();
             //4.处理事件。selectionKeySet 内部包含了所有发生的事件
             Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()){
                 SelectionKey selectionKey = iterator.next();
                 log.debug("key:{}", selectionKey);
-                ServerSocketChannel channel = (ServerSocketChannel) selectionKey.channel();
-                SocketChannel socketChannel = channel.accept();
-                log.debug("socketChannel:{}", socketChannel);
+                //事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，这是因为 nio 底层使用的是水平触发
+                // ServerSocketChannel channel = (ServerSocketChannel) selectionKey.channel();
+                // SocketChannel socketChannel = channel.accept();
+                // log.debug("socketChannel:{}", socketChannel);
+                selectionKey.cancel();
             }
+            Thread.sleep(2000);
         }
 
     }
