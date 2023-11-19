@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class SelectorServer_read {
         // 1.创建selector 管理多个channel
         Selector selector = Selector.open();
 
-        ByteBuffer buffer = ByteBuffer.allocate(10);
+        ByteBuffer buffer = ByteBuffer.allocate(4);
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
 
@@ -77,6 +78,7 @@ public class SelectorServer_read {
                         continue;
                     }
                     buffer.flip();
+                    System.out.println(Charset.defaultCharset().decode(buffer).toString());
                     ByteBufferUtil.debugRead(buffer);
                     buffer.clear();
                     iterator.remove();
