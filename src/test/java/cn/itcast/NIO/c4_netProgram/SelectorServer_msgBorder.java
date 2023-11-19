@@ -58,7 +58,7 @@ public class SelectorServer_msgBorder {
                     log.debug("socketChannel:{}", socketChannel);
                     socketChannel.configureBlocking(false);
                     // 注册这个socketChannel
-                    // 把这个buffer放在附件里面，关联到SelectionKey上
+                    // 把这个buffer放在附件里面，关联到SelectionKey上。因为 ByteBuffer 不能被多个 channel 共同使用不然数据就乱了
                     ByteBuffer buffer = ByteBuffer.allocate(16);
                     SelectionKey socketSelectionKey = socketChannel.register(selector, 0, buffer);
                     // 我关注read类型
