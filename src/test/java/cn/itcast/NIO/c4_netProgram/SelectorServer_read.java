@@ -71,7 +71,7 @@ public class SelectorServer_read {
                     int read = channel.read(buffer);
                     log.debug(" read len:{}", read);
                     if (read == -1) {
-                        // 如果链接断开,需要在这边做处理.不然下一次进来,那个Channel还是会触发读事件.会默认这个断开的客户端channel的读事件没有处理
+                        //  如果链接断开,需要在这边做处理.不然下一次进来,那个Channel还是会触发读事件.会默认这个断开的客户端channel的读事件没有处理
                         // https://blog.csdn.net/Wligt/article/details/131650654
                         selectedKey.cancel();
                         continue;
