@@ -3,6 +3,7 @@ package cn.itcast.NIO.c4_netProgram;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 
 /**
  * @author XuHan
@@ -19,6 +20,10 @@ public class Client {
     public static void main(String[] args) throws IOException {
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.connect(new InetSocketAddress(8080));
-        System.out.println("waiting");
+        // socketChannel.write(Charset.defaultCharset().encode("hello\nworld\n"));
+        // 如果消息大于单个buffer怎么办？
+        socketChannel.write(Charset.defaultCharset().encode("0123456789abcdef3333\n"));
+        // System.out.println("waiting");
+        System.in.read();
     }
 }
