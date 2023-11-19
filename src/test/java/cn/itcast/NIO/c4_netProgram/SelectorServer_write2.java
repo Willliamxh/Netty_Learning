@@ -61,9 +61,11 @@ public class SelectorServer_write2 {
                     System.out.println("实际写入字节数 num"+ write);
                     // 6.数据需要清理
                     if(!attBytebuffer.hasRemaining()){
-                        // 如果内容写完了 清除buffer
+                        // 如果内容写完了 清除buffer。 减少内存的占用。
                         selectionKey.attach(null);
                         // 不需要关注可读事件
+                        // 只要向 channel 发送数据时，socket 缓冲可写，这个事件会频繁触发（哪怕我一次性都发完了），
+                        // 因此应当只在 socket 缓冲区写不下时再关注可写事件，数据写完之后再取消关注。
                         selectionKey.interestOps(selectionKey.interestOps()-SelectionKey.OP_WRITE);
                     }
                 }
