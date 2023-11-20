@@ -58,18 +58,22 @@ public class MultiThreadServer {
         }
 
         // 初始化线程和selector
-        public void init(SocketChannel socketChannel) throws IOException {
+        public void init(SocketChannel socketChannel) throws Exception {
             if(!start){
                 // 保证我们的worker只有一个线程和一个selector
                 // 也就是执行worker run里面的方法
+                selector = Selector.open();
                 thread = new Thread(this,name);
                 thread.start();
-                selector = Selector.open();
                 start = true;
             }
             // wakeup 简单实现，wakeup相当于是给了一张门票。先给票，下次要阻塞了发现有票，就不阻塞了
+            // 实测会出现问题，问题原因是之前把Selector.open();放在了thread.start();之后，导致selector出现null值。已经解决
+            // 然后抛出异常
             selector.wakeup();
             socketChannel.register(selector,SelectionKey.OP_READ);
+
+
         }
 
         @Override
@@ -78,6 +82,7 @@ public class MultiThreadServer {
                 try {
                     // 问题主要是出现在这边  worker的select这边初始化的时候select阻塞住了
                     // 用select.wakeup来取消注册
+                    log.debug(" selector.select();{}",selector);
                     selector.select();
                     Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                     while (iterator.hasNext()){
@@ -111,3 +116,4 @@ public class MultiThreadServer {
 // 在读取数据的时候第二个请求添加进队列并唤醒，那执行完第一个任务的数据读取之后，还是阻塞住了，第二个任务没法去执行注册
 //当然不能放在上面了，万一run线程跑的快，你这个queue都还没有添加进去，run里面拿出来是null,必须先阻塞，放了任务再wakeup，
 // 应该是selec阻塞中,再register不会立刻生效 所以要wakeup再注册再调用select()
+//多个线程直之间哪个线程先执行是不确定的
