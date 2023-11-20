@@ -31,7 +31,7 @@ public class MultiWorkerServer2 {
         serverSocketChannel.bind(new InetSocketAddress(8080));
         // 1.创建固定数量的worker 并
         //Runtime.getRuntime().availableProcessors() 如果工作在 docker 容器下，因为容器不是物理隔离的，会拿到物理 cpu 个数，而不是容器申请时的个数
-        worker[] workers = new worker[Runtime.getRuntime().availableProcessors()];
+        worker[] workers = new worker[2];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new worker("worker-"+i);
         }
