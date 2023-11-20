@@ -22,7 +22,7 @@ public class Client {
         socketChannel.connect(new InetSocketAddress(8080));
         // socketChannel.write(Charset.defaultCharset().encode("hello\nworld\n"));
         // 如果消息大于单个buffer怎么办？
-        socketChannel.write(Charset.defaultCharset().encode("0123456789abcdef3333\n"));
+        socketChannel.write(Charset.defaultCharset().encode("0123456783"));
         // System.out.println("waiting");
         System.in.read();
     }
