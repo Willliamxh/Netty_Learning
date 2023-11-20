@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 @Slf4j
 public class MultiThreadServer {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         // 主线程 boss 专门监听accept事件
         Thread.currentThread().setName("boss");
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
