@@ -67,18 +67,9 @@ public class MultiThreadServer {
                 selector = Selector.open();
                 start = true;
             }
-            // 向队列添加任务 但任务并没有执行（在执行这边的代码的时候，work的run可能已经开始运行了，如果我不是先select阻塞住
-            // 那我的queue还是空的，也就是没有注册的channel，然后又被阻塞住了。）
-            // 所以下面的select必须是在必须在这个任务前面阻塞住。保证我boss线程把任务加进去了，再wakeup进行注册操作。
-            // 这么一想 前后其实问题不大，就算是个null被阻塞住了，只要我boss线程加了任务，我就会把selector唤醒。所以问题也不大
-            queue.add(()->{
-                try {
-                    socketChannel.register(selector,SelectionKey.OP_READ);
-                } catch (ClosedChannelException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            // wakeup 简单实现，wakeup相当于是给了一张门票。先给票，下次要阻塞了发现有票，就不阻塞了
             selector.wakeup();
+            socketChannel.register(selector,SelectionKey.OP_READ);
         }
 
         @Override
@@ -88,10 +79,6 @@ public class MultiThreadServer {
                     // 问题主要是出现在这边  worker的select这边初始化的时候select阻塞住了
                     // 用select.wakeup来取消注册
                     selector.select();
-                    Runnable task = queue.poll();
-                    if(task!=null){
-                        task.run();//在这个位置执行了注册操作 boss线程只是添加了任务，任务并没有执行
-                    }
                     Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                     while (iterator.hasNext()){
                         SelectionKey key = iterator.next();
