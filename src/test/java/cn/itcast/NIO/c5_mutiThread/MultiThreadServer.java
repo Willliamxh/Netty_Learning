@@ -24,9 +24,8 @@ public class MultiThreadServer {
         SelectionKey bossKey = serverSocketChannel.register(boss, 0, null);
         bossKey.interestOps(SelectionKey.OP_ACCEPT);
         serverSocketChannel.bind(new InetSocketAddress(8080));
-        // 1.创建固定数量的worker 并 初始化
+        // 1.创建固定数量的worker 并
         worker worker = new worker("worker-0");
-        worker.register();
         while (true){
             boss.select();
             Iterator<SelectionKey> iterator = boss.selectedKeys().iterator();
@@ -40,6 +39,8 @@ public class MultiThreadServer {
                     //2.关联selector （静态内部类，能访问到私有变量）
                     log.debug("before reg ...{}",socketChannel.getRemoteAddress());
                     // 这边注册会被run方法里面的select阻塞住导致selector不能注册
+                    // 这种就是碰巧register先执行了，select后执行了
+                    worker.init();// 初始化 worker
                     socketChannel.register(worker.selector,SelectionKey.OP_READ);
                     log.debug("after reg ...{}",socketChannel.getRemoteAddress());
 
@@ -58,7 +59,7 @@ public class MultiThreadServer {
         }
 
         // 初始化线程和selector
-        public void register() throws IOException {
+        public void init() throws IOException {
             if(!start){
                 // 保证我们的worker只有一个线程和一个selector
                 // 也就是执行worker run里面的方法
