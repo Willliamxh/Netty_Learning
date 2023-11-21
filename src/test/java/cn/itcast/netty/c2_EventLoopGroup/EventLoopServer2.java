@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -20,6 +21,8 @@ import java.nio.charset.Charset;
 @Slf4j
 public class EventLoopServer2 {
     public static void main(String[] args) {
+        // 整一个defaultEventLoopGroup 处理耗时长的事件
+        DefaultEventLoop defaultEventLoop = new DefaultEventLoop();
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         // boss只负责serverSocketChannel的accept事件  worker SocketChannel负责读写操作
@@ -31,6 +34,13 @@ public class EventLoopServer2 {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+                    @Override                                               // bytebuf
+                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                        ByteBuf byteBuf = (ByteBuf) msg;
+                        log.debug(byteBuf.toString(Charset.defaultCharset()));
+                        ctx.fireChannelRead(msg);
+                    }
+                }).addLast(defaultEventLoop,"handler2",new ChannelInboundHandlerAdapter() {
                     @Override                                               // bytebuf
                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                         ByteBuf byteBuf = (ByteBuf) msg;
