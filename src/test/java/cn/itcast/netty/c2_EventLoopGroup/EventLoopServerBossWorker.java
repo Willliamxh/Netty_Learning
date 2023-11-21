@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
 @Slf4j
 public class EventLoopServerBossWorker {
     public static void main(String[] args) {
-        // 整一个defaultEventLoopGroup 处理耗时长的事件
+        // 整一个defaultEventLoopGroup  处理耗时长的事件
         DefaultEventLoop defaultEventLoop = new DefaultEventLoop();
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
