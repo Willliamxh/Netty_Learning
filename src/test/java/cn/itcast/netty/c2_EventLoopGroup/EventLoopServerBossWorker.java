@@ -19,7 +19,7 @@ import java.nio.charset.Charset;
  * 职责进一步划分
  */
 @Slf4j
-public class EventLoopServer2 {
+public class EventLoopServerBossWorker {
     public static void main(String[] args) {
         // 整一个defaultEventLoopGroup 处理耗时长的事件
         DefaultEventLoop defaultEventLoop = new DefaultEventLoop();
