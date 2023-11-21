@@ -3,6 +3,8 @@ package cn.itcast.netty.c2_EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author XuHan
  * @date 2023/11/21 13:35
@@ -21,14 +23,20 @@ public class TestEventLoop {
         // EventLoop executors = group.next();
         //3.执行一个普通任务 提交给了事件循环组中某个对象去处理
         // 1.可以做异步处理 2.在做事件分发的时候
-        group.next().submit(()->{
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+        // group.next().submit(()->{
+        //     try {
+        //         Thread.sleep(1000);
+        //     } catch (InterruptedException e) {
+        //
+        //     }
+        //     log.debug("ok");
+        // });
 
-            }
+        //执行定时任务
+        group.next().scheduleWithFixedDelay(()->{
             log.debug("ok");
-        });
+        },0,1, TimeUnit.SECONDS);
+
 
         log.debug("main");
     }
