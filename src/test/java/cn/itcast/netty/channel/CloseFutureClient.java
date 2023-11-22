@@ -3,10 +3,14 @@ package cn.itcast.netty.channel;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Scanner;
 
@@ -14,6 +18,7 @@ import java.util.Scanner;
  * @author XuHan
  * @date 2023/11/22 15:52
  */
+@Slf4j
 public class CloseFutureClient {
     public static void main(String[] args) throws InterruptedException {
         ChannelFuture channelFuture = new Bootstrap()
@@ -22,6 +27,7 @@ public class CloseFutureClient {
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) {
+                        ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                         ch.pipeline().addLast(new StringEncoder());
                     }
                 })
@@ -42,6 +48,19 @@ public class CloseFutureClient {
             }
         },"input").start();
 
+        // 获取一个新的future对象-closeFuture对象 1）同步处理结果 2）异步处理结果
+        // ChannelFuture closeFuture = channel.closeFuture();
+        // System.out.println("waiting close");
+        // closeFuture.sync();
+        // log.debug("处理关闭结果");
 
+        //方法2
+        ChannelFuture closeFuture = channel.closeFuture();
+        closeFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                log.debug("NIO线程处理关闭结果");
+            }
+        });
     }
 }
