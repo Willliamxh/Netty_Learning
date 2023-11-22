@@ -1,4 +1,4 @@
-package cn.itcast.netty.channel;
+package cn.itcast.netty.c3_channel;
 
 /**
  * @author XuHan
