@@ -21,8 +21,9 @@ import java.util.Scanner;
 @Slf4j
 public class CloseFutureClient {
     public static void main(String[] args) throws InterruptedException {
+        NioEventLoopGroup group = new NioEventLoopGroup();
         ChannelFuture channelFuture = new Bootstrap()
-                .group(new NioEventLoopGroup())
+                .group(group)
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
@@ -60,6 +61,7 @@ public class CloseFutureClient {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 log.debug("NIO线程处理关闭结果");
+                group.shutdownGracefully();
             }
         });
     }
