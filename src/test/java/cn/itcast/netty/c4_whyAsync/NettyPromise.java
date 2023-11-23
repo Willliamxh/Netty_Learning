@@ -1,0 +1,41 @@
+package cn.itcast.netty.c4_whyAsync;
+
+import io.netty.channel.EventLoop;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.DefaultPromise;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.ExecutionException;
+
+/**
+ * @author XuHan
+ * @date 2023/11/23 10:29
+ */
+@Slf4j
+public class NettyPromise {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        //1.EventLoop对象
+        NioEventLoopGroup group = new NioEventLoopGroup();
+        EventLoop eventLoop = group.next();
+
+        // 2.可以主动创建Promise对象 把它当做一个放结果的对象
+        DefaultPromise<Integer> promise = new DefaultPromise<>(eventLoop);
+
+        new Thread(()->{
+            //3.任意一个线程执行计算，计算完毕后，向Promise填充结果
+            log.debug("开始计算");
+            try {
+                int i = 1/0;
+                Thread.sleep(3000);
+                promise.setSuccess(80);
+            }catch (Exception e){
+                e.printStackTrace();
+                promise.setFailure(e);
+            }
+        }).start();
+
+        //4。接收结果的线程
+        log.debug("等待结果");
+        log.debug("结果是：{}",promise.get());
+    }
+}
