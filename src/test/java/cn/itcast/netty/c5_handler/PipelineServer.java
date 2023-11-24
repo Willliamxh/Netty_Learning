@@ -1,11 +1,14 @@
 package cn.itcast.netty.c5_handler;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+
+import java.nio.charset.Charset;
 
 /**
  * @author XuHan
@@ -28,21 +31,29 @@ public class PipelineServer {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                 log.debug("1");
-                                super.channelRead(ctx, msg);
+                                ByteBuf buf = (ByteBuf)msg;
+                                String name = buf.toString(Charset.defaultCharset());
+                                // 执行权由h1传递给h2  将数据传递给下一个handler 如果不调用，调用链会断开
+                                super.channelRead(ctx, name);
                             }
                         });
                         pipeline.addLast("h2",new ChannelInboundHandlerAdapter(){
                             @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                            public void channelRead(ChannelHandlerContext ctx, Object name) throws Exception {
                                 log.debug("2");
-                                super.channelRead(ctx, msg);
+                                Student student = new Student(name.toString());
+                                // 如果这里断开了 3就不会执行了 也就不会执行写了 就只会触发1 2
+                                // 这边尝试一下触发写 验证了outbound不受影响
+                                // ch.writeAndFlush(ctx.alloc().buffer().writeBytes("server..".getBytes()));
+                                super.channelRead(ctx, student);
                             }
                         });
                         pipeline.addLast("h3",new ChannelInboundHandlerAdapter(){
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                log.debug("3");
-                                super.channelRead(ctx, msg);
+                                log.debug("3，结果：{}，class：{}",msg,msg.getClass());
+                                // 往后没有入站处理器了 可以不调用这个了
+                                // super.channelRead(ctx, msg);
                                 ch.writeAndFlush(ctx.alloc().buffer().writeBytes("server..".getBytes()));
                             }
                         });
@@ -70,5 +81,27 @@ public class PipelineServer {
                         });
                     }
                 }).bind(8080);
+    }
+    static class Student{
+        private String name;
+
+        public Student(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "Student{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
     }
 }
