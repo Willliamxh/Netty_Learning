@@ -54,7 +54,10 @@ public class PipelineServer {
                                 log.debug("3，结果：{}，class：{}",msg,msg.getClass());
                                 // 往后没有入站处理器了 可以不调用这个了
                                 // super.channelRead(ctx, msg);
-                                ch.writeAndFlush(ctx.alloc().buffer().writeBytes("server..".getBytes()));
+                                //  * ctx.channel().write(msg) 从尾部开始查找出站处理器
+                                // * ctx.write(msg) 是从当前节点找上一个出站处理器
+                                ctx.writeAndFlush(ctx.alloc().buffer().writeBytes("server..".getBytes()));
+                                // ch.writeAndFlush(ctx.alloc().buffer().writeBytes("server..".getBytes()));
                             }
                         });
                         // outBound 只有向channel中写了数据才会触发
