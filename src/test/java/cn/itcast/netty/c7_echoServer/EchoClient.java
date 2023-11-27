@@ -50,3 +50,6 @@ public class EchoClient {
         }).start();
     }
 }
+//正解:对于ByteBuf来说，分为池化（Pooled）和非池化（Unpooled）两种分配内存的方式。其中UnpooledHeapByteBuf 底下的byte[]能够依赖JVM GC自然回收，
+//这题我会，就算是这边没有进行accept，客户端connect了，也可以成功建立通道，因为是tcp是面向连接
+//需要释放buffer而不需要释放response
