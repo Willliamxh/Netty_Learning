@@ -6,18 +6,18 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author XuHan
- * @date 2023/11/27 15:53
+ * @date 2023/11/27 16:13
  */
 @Slf4j
-public class FixLengthServ {
-    public void start() {
+public class SplitServ {
+    void start() {
         NioEventLoopGroup boss = new NioEventLoopGroup(1);
         NioEventLoopGroup worker = new NioEventLoopGroup();
         try {
@@ -29,7 +29,8 @@ public class FixLengthServ {
             serverBootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new FixedLengthFrameDecoder(8));
+                    // 最大的len 表示超过这个长度没有遇到换行符 就算有问题了
+                    ch.pipeline().addLast(new LineBasedFrameDecoder(1024));
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                 }
             });
@@ -48,7 +49,6 @@ public class FixLengthServ {
     }
 
     public static void main(String[] args) {
-        new FixLengthServ().start();
+        new SplitServ().start();
     }
-
 }
