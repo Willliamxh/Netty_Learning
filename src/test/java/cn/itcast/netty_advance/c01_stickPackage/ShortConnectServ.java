@@ -26,7 +26,7 @@ public class ShortConnectServ {
             serverBootstrap.channel(NioServerSocketChannel.class);
             // 调整系统的接受缓冲器（滑动窗口）
             // serverBootstrap.option(ChannelOption.SO_RCVBUF,7);
-            // 调整netty 的接受缓冲区（byteBuf）
+            // 调整netty 的接受缓冲区（byteBuf）估计netty在mac这边有做什么底层的优化吧
             serverBootstrap.childOption(ChannelOption.RCVBUF_ALLOCATOR,new AdaptiveRecvByteBufAllocator(10,10,10));
             serverBootstrap.group(boss, worker);
             serverBootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
