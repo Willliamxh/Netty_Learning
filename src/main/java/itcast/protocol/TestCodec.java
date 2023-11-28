@@ -28,14 +28,14 @@ public class TestCodec {
         //测试decode
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
         new MessageCodec().encode(null,message,buf);
-        channel.writeInbound(buf);
+        // channel.writeInbound(buf);
 
 
-        // ByteBuf s1 = buf.slice(0, 100);
-        // ByteBuf s2 = buf.slice(100, buf.readableBytes() - 100);
-        // s1.retain(); // 引用计数 2
-        // channel.writeInbound(s1); // release 1
-        // channel.writeInbound(s2);
+        ByteBuf s1 = buf.slice(0, 100);
+        ByteBuf s2 = buf.slice(100, buf.readableBytes() - 100);
+        s1.retain(); // 引用计数+1 = 2
+        channel.writeInbound(s1); // 这边写完之后会调用 release1 slice是林拷贝 如果释放掉了 s2也没了
+        channel.writeInbound(s2);
     }
 
 }
