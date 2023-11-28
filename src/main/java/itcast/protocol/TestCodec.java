@@ -13,11 +13,19 @@ import itcast.message.LoginRequestMessage;
  */
 public class TestCodec {
     public static void main(String[] args) throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel(new LoggingHandler(),
+        // 工序
+        // 工人1 1234
+        // 工人2 1234 会把工人1和工人2的给组成一起了 所以尽量不要抽成变量给多个Channel用 会有线程安全问题
+        LengthFieldBasedFrameDecoder frameDecoder = new LengthFieldBasedFrameDecoder(
+                // 最大长度  长度字段偏移量   长度本身字节          长度是否需要调整   是否保留后面字段
+                1024, 12, 4, 0, 0);
+        // 工序
+        // log没有线程安全问题 @Sharable 可以被共享
+        LoggingHandler loggingHandler = new LoggingHandler();
+
+        EmbeddedChannel channel = new EmbeddedChannel(loggingHandler,
                 // 为了解决粘包半包问题
-                new LengthFieldBasedFrameDecoder(
-                        // 最大长度  长度字段偏移量   长度本身字节          长度是否需要调整   是否保留后面字段
-                        1024, 12, 4, 0, 0),
+                frameDecoder,
                 new MessageCodec());
 
         // 测试encode
