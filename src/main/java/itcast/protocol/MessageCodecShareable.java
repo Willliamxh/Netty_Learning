@@ -1,8 +1,9 @@
 package itcast.protocol;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageCodec;
+import io.netty.handler.codec.MessageToMessageCodec;
 import itcast.message.Message;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,13 +15,19 @@ import java.util.List;
 
 /**
  * @author XuHan
- * @date 2023/11/28 11:13
- * ByteToMessageCodec子类设计之初 就是想让你拼凑各个字符，所以子类就是不允许你为share的
+ * @date 2023/11/28 19:22
+ * * 必须和  LengthFieldBasedFrameDecoder frameDecoder = new LengthFieldBasedFrameDecoder(
+ *  *                 // 最大长度  长度字段偏移量   长度本身字节          长度是否需要调整   是否保留后面字段
+ *  *                 1024, 12, 4, 0, 0);
+ *  * 一起使用，确保街道的byteBuf是完整的。不会出现线程安全问题
  */
 @Slf4j
-public class MessageCodec extends ByteToMessageCodec<Message> {
+@ChannelHandler.Sharable
+public class MessageCodecShareable extends MessageToMessageCodec<ByteBuf, Message> {
+
     @Override
-    protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, Message msg, List<Object> outList) throws Exception {
+        ByteBuf out = ctx.alloc().buffer();
         // 1. 4 字节的魔数
         out.writeBytes(new byte[]{1, 2, 3, 4});
         // 2. 1 字节的版本,
@@ -43,6 +50,7 @@ public class MessageCodec extends ByteToMessageCodec<Message> {
         out.writeInt(bytes.length);
         // 8. 写入内容
         out.writeBytes(bytes);
+        outList.add(out);
     }
 
     @Override
