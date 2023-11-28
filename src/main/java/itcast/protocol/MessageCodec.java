@@ -4,8 +4,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import itcast.message.Message;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
@@ -13,6 +16,7 @@ import java.util.List;
  * @author XuHan
  * @date 2023/11/28 11:13
  */
+@Slf4j
 public class MessageCodec extends ByteToMessageCodec<Message> {
     @Override
     protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
@@ -42,6 +46,19 @@ public class MessageCodec extends ByteToMessageCodec<Message> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-
+        int magicNum = in.readInt();
+        byte version = in.readByte();
+        byte serializerType = in.readByte();
+        byte messageType = in.readByte();
+        int sequenceId = in.readInt();
+        in.readByte();
+        int length = in.readInt();
+        byte[] bytes = new byte[length];
+        in.readBytes(bytes, 0, length);
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+        Message message = (Message) ois.readObject();
+        log.debug("{}, {}, {}, {}, {}, {}", magicNum, version, serializerType, messageType, sequenceId, length);
+        log.debug("{}", message);
+        out.add(message);
     }
 }
