@@ -10,13 +10,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import itcast.message.LoginRequestMessage;
-import itcast.message.LoginResponseMessage;
+import itcast.message.*;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,6 +32,7 @@ public class ChatClient {
         MessageCodecShareable messageCodec = new MessageCodecShareable();
         CountDownLatch waitForLogin = new CountDownLatch(1);
         AtomicBoolean login = new AtomicBoolean(false);
+        AtomicBoolean EXIT = new AtomicBoolean(false);
         try{
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.channel(NioSocketChannel.class);
@@ -67,11 +67,11 @@ public class ChatClient {
                             new Thread(()->{
                                 Scanner scanner=new Scanner(System.in);
                                 System.out.println("请输入用户名：");
-                                String name = scanner.nextLine();
+                                String username = scanner.nextLine();
                                 System.out.println("请输入密码：");
                                 String password = scanner.nextLine();
                                 // 构造消息对象
-                                LoginRequestMessage loginRequestMessage = new LoginRequestMessage(name, password);
+                                LoginRequestMessage loginRequestMessage = new LoginRequestMessage(username, password);
                                 // 发送消息 （通过ctx发消息出去，就是从tail往前找handler）
                                 ctx.writeAndFlush(loginRequestMessage);
 
@@ -97,8 +97,41 @@ public class ChatClient {
                                     System.out.println("gquit [group name]");
                                     System.out.println("quit");
                                     System.out.println("==================================");
-                                    Scanner scanner1 = new Scanner(System.in);
-                                    scanner1.nextLine();
+                                    String command = null;
+                                    try {
+                                        command = scanner.nextLine();
+                                    } catch (Exception e) {
+                                        break;
+                                    }
+                                    String[] s = command.split(" ");
+                                    switch (s[0]) {
+                                        case "send":
+                                            ctx.writeAndFlush(new ChatRequestMessage(username, s[1], s[2]));
+                                            break;
+                                        case "gsend":
+                                            ctx.writeAndFlush(new GroupChatRequestMessage(username, s[1], s[2]));
+                                            break;
+                                        case "gcreate":
+                                            List<String> stringList = Arrays.asList(s[2].split(","));
+                                            Set<String> set = new HashSet<>(stringList);
+                                            // 加入自己
+                                            set.add(username);
+                                            ctx.writeAndFlush(new GroupCreateRequestMessage(s[1], set));
+                                            break;
+                                        case "gmembers":
+                                            ctx.writeAndFlush(new GroupMembersRequestMessage(s[1]));
+                                            break;
+                                        case "gjoin":
+                                            ctx.writeAndFlush(new GroupJoinRequestMessage(username, s[1]));
+                                            break;
+                                        case "gquit":
+                                            ctx.writeAndFlush(new GroupQuitRequestMessage(username, s[1]));
+                                            break;
+                                        case "quit":
+                                            ctx.channel().close();
+                                            return;
+                                    }
+
                                 }
                             },"system in").start();
                         }
