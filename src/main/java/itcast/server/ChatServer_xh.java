@@ -10,8 +10,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
-import itcast.server.handler.ChatRequestMessageHandler;
-import itcast.server.handler.LoginRequestMessageHandler;
+import itcast.server.handler.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,6 +27,11 @@ public class ChatServer_xh {
         MessageCodecShareable messageCodec = new MessageCodecShareable();
         LoginRequestMessageHandler loginHandler = new LoginRequestMessageHandler();
         ChatRequestMessageHandler chatHandler = new ChatRequestMessageHandler();
+        GroupCreateRequestMessageHandler    groupCreateHandler = new GroupCreateRequestMessageHandler();
+        GroupJoinRequestMessageHandler      groupJoinHandler = new GroupJoinRequestMessageHandler();
+        GroupMembersRequestMessageHandler   groupMembersHandler = new GroupMembersRequestMessageHandler();
+        GroupQuitRequestMessageHandler      groupQuitHandler = new GroupQuitRequestMessageHandler();
+        GroupChatRequestMessageHandler      groupChatHandler = new GroupChatRequestMessageHandler();
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.channel(NioServerSocketChannel.class);
@@ -41,6 +45,11 @@ public class ChatServer_xh {
                     //  我只关心这个message的情况
                     ch.pipeline().addLast(loginHandler);
                     ch.pipeline().addLast(chatHandler);
+                    ch.pipeline().addLast(groupCreateHandler);
+                    ch.pipeline().addLast(groupJoinHandler);
+                    ch.pipeline().addLast(groupMembersHandler);
+                    ch.pipeline().addLast(groupQuitHandler);
+                    ch.pipeline().addLast(groupChatHandler);
                 }
             });
             ChannelFuture channelFuture = serverBootstrap.bind(8080);

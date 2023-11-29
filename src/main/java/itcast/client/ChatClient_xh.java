@@ -43,7 +43,7 @@ public class ChatClient_xh {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
-                    ch.pipeline().addLast(loggingHandler);
+                    // ch.pipeline().addLast(loggingHandler);
                     ch.pipeline().addLast(messageCodec);
                     ch.pipeline().addLast("clientHandler",new ChannelInboundHandlerAdapter(){
                         // 接收服务器给我的输入

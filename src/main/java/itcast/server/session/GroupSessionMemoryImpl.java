@@ -15,6 +15,7 @@ public class GroupSessionMemoryImpl implements GroupSession {
     @Override
     public Group createGroup(String name, Set<String> members) {
         Group group = new Group(name, members);
+        //如果所指定的 key 已经在 HashMap 中存在，返回和这个 key 值对应的 value, 如果所指定的 key 不在 HashMap 中存在，则返回 null。
         return groupMap.putIfAbsent(name, group);
     }
 
