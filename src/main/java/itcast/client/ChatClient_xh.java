@@ -28,6 +28,7 @@ public class ChatClient_xh {
     public static void main(String[] args) {
         NioEventLoopGroup group = new NioEventLoopGroup();
         // 可共享的抽到外面去
+        Scanner scanner=new Scanner(System.in);
         LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         MessageCodecShareable messageCodec = new MessageCodecShareable();
         CountDownLatch waitForLogin = new CountDownLatch(1);
@@ -66,7 +67,6 @@ public class ChatClient_xh {
                         public void channelActive(ChannelHandlerContext ctx) throws Exception {
                             // 用户输入毕竟是阻塞IO，需要一个独立线程 负责用户在和控制台的输入，向服务器发送消息
                             new Thread(()->{
-                                Scanner scanner=new Scanner(System.in);
                                 System.out.println("请输入用户名：");
                                 String username = scanner.nextLine();
                                 System.out.println("请输入密码：");
@@ -144,6 +144,7 @@ public class ChatClient_xh {
             Channel channel = bootstrap.connect("127.0.0.1", 8080).sync().channel();
             channel.closeFuture().sync();
         }catch (Exception e){
+            e.printStackTrace();
             log.error("client error", e);
         } finally {
             group.shutdownGracefully();

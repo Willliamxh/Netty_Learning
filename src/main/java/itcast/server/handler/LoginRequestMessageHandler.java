@@ -1,5 +1,6 @@
 package itcast.server.handler;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import itcast.message.LoginRequestMessage;
@@ -11,7 +12,9 @@ import itcast.server.session.SessionFactory;
 /**
  * @author XuHan
  * @date 2023/11/29 14:40
+ * 自定义Handler的时候必须添加
  */
+@ChannelHandler.Sharable
 public class LoginRequestMessageHandler extends SimpleChannelInboundHandler<LoginRequestMessage> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LoginRequestMessage msg) throws Exception {
@@ -31,3 +34,6 @@ public class LoginRequestMessageHandler extends SimpleChannelInboundHandler<Logi
         ctx.writeAndFlush(responseMessage);
     }
 }
+/**
+
+ */
