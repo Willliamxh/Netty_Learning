@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
+import itcast.config.Config;
 import itcast.message.Message;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,7 +30,7 @@ public class MessageCodecShareable extends MessageToMessageCodec<ByteBuf, Messag
         // 2. 1 字节的版本,
         out.writeByte(1);
         // 3. 1 字节的序列化方式 jdk 0 , json 1
-        out.writeByte(0);
+        out.writeByte(Config.getSerializerAlgorithm().ordinal());
         // 4. 1 字节的指令类型 在这个类里面有做了设计
         out.writeByte(msg.getMessageType());
         // 5. 4 个字节 通过@data或得 请求序号 双工通信使用
@@ -43,7 +44,7 @@ public class MessageCodecShareable extends MessageToMessageCodec<ByteBuf, Messag
         // oos.writeObject(msg);
         // byte[] bytes = bos.toByteArray();
         // 用重新写的Serializer来序列化
-        byte[] bytes = Serializer.Algorithm.Java.serialize(msg);
+        byte[] bytes = Config.getSerializerAlgorithm().serialize(msg);
         // 7. 长度
         out.writeInt(bytes.length);
         // 8. 写入内容
@@ -65,9 +66,13 @@ public class MessageCodecShareable extends MessageToMessageCodec<ByteBuf, Messag
         // ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
         // Message message = (Message) ois.readObject();
         // 把java序列化方法抽象到一个类中
-        Message message = Serializer.Algorithm.Java.deserialize(Message.class, bytes);
-        log.debug("{}, {}, {}, {}, {}, {}", magicNum, version, serializerType, messageType, sequenceId, length);
-        log.debug("{}", message);
-        out.add(message);
+        // 找到反序列化时的算法
+        Serializer.Algorithm algorithm = Serializer.Algorithm.values()[serializerType];
+        // 确定具体消息类型
+        Class<? extends Message> messageClass = Message.getMessageClass(messageType);
+        Message deserialize = algorithm.deserialize(messageClass, bytes);
+        // log.debug("{}, {}, {}, {}, {}, {}", magicNum, version, serializerType, messageType, sequenceId, length);
+        // log.debug("{}", message);
+        out.add(deserialize);
     }
 }
