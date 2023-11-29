@@ -1,15 +1,15 @@
 package itcast.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import itcast.message.*;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
@@ -45,6 +45,22 @@ public class ChatClient_xh {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
                     // ch.pipeline().addLast(loggingHandler);
                     ch.pipeline().addLast(messageCodec);
+                    // 用来判断是不是 读空闲时间过长，或 写空闲时间过长
+                    // 3s 内如果没有向服务器写数据，会触发一个 IdleState#WRITER_IDLE 事件 时间间隔要比服务器短一些
+                    ch.pipeline().addLast(new IdleStateHandler(0, 3, 0));
+                    // ChannelDuplexHandler 可以同时作为入站和出站处理器
+                    ch.pipeline().addLast(new ChannelDuplexHandler() {
+                        // 用来触发特殊事件
+                        @Override
+                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception{
+                            IdleStateEvent event = (IdleStateEvent) evt;
+                            // 触发了写空闲事件
+                            if (event.state() == IdleState.WRITER_IDLE) {
+                                log.debug("3s 没有写数据了，发送一个心跳包");
+                                ctx.writeAndFlush(new PingMessage());
+                            }
+                        }
+                    });
                     ch.pipeline().addLast("clientHandler",new ChannelInboundHandlerAdapter(){
                         // 接收服务器给我的输入
                         @Override
@@ -136,6 +152,20 @@ public class ChatClient_xh {
 
                                 }
                             },"system in").start();
+                        }
+
+                        // 在连接断开时触发
+                        @Override
+                        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                            log.debug("连接已经断开，按任意键退出..");
+                            EXIT.set(true);
+                        }
+
+                        // 在出现异常时触发
+                        @Override
+                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                            log.debug("连接已经断开，按任意键退出..{}", cause.getMessage());
+                            EXIT.set(true);
                         }
                     });
 
