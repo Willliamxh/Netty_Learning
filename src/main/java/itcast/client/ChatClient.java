@@ -75,7 +75,7 @@ public class ChatClient {
 
                 }
             });
-            Channel channel = bootstrap.connect("localhost", 8080).sync().channel();
+            Channel channel = bootstrap.connect("127.0.0.1", 8080).sync().channel();
             channel.closeFuture().sync();
         }catch (Exception e){
             log.error("client error", e);
