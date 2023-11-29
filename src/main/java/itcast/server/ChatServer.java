@@ -6,10 +6,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import itcast.protocol.MessageCodecShareable;
+import itcast.protocol.ProtocolFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -31,9 +31,7 @@ public class ChatServer {
             serverBootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(
-                            // 最大长度  长度字段偏移量   长度本身字节          长度是否需要调整   是否保留后面字段
-                            1024, 12, 4, 0, 0));
+                    ch.pipeline().addLast(new ProtocolFrameDecoder());
                     ch.pipeline().addLast(loggingHandler);
                     ch.pipeline().addLast(messageCodec);
                 }
