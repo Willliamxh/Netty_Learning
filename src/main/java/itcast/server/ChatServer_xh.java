@@ -40,7 +40,7 @@ public class ChatServer_xh {
                     ch.pipeline().addLast(messageCodec);
                     //  我只关心这个message的情况
                     ch.pipeline().addLast(loginHandler);
-                    // ch.pipeline().addLast(chatHandler);
+                    ch.pipeline().addLast(chatHandler);
                 }
             });
             ChannelFuture channelFuture = serverBootstrap.bind(8080);

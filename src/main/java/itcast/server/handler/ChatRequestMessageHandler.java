@@ -31,4 +31,4 @@ public class ChatRequestMessageHandler extends SimpleChannelInboundHandler<ChatR
         }
     }
 }
-// /这块可以共享吗 如果俩线程同时进来 第一个执行getChannel时，第二个执行getTo 会不会把第一个to改成第二个，进而造成问题啊。。。 感觉和servlet一个道理啊
+
