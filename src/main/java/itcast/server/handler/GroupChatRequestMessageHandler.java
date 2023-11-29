@@ -14,6 +14,7 @@ import java.util.List;
 public class GroupChatRequestMessageHandler extends SimpleChannelInboundHandler<GroupChatRequestMessage> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, GroupChatRequestMessage msg) throws Exception {
+        // 找到所有的群成员
         List<Channel> channels = GroupSessionFactory.getGroupSession()
                 .getMembersChannel(msg.getGroupName());
 
