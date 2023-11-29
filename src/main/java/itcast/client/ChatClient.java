@@ -11,12 +11,14 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import itcast.message.LoginRequestMessage;
+import itcast.message.LoginResponseMessage;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author XuHan
@@ -29,6 +31,8 @@ public class ChatClient {
         // 可共享的抽到外面去
         LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         MessageCodecShareable messageCodec = new MessageCodecShareable();
+        CountDownLatch waitForLogin = new CountDownLatch(1);
+        AtomicBoolean login = new AtomicBoolean(false);
         try{
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.channel(NioSocketChannel.class);
@@ -38,12 +42,22 @@ public class ChatClient {
                 @Override
                 public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                     log.debug("message：{}",msg);
+                    // 如果是登录的消息
+                    if (msg instanceof LoginResponseMessage) {
+                        LoginResponseMessage responseMessage = (LoginResponseMessage) msg;
+                        // 如果登录成功
+                        if (responseMessage.isSuccess()) {
+                            login.set(true);
+                        }
+                        // 不管成功失败 唤醒登录的线程 system.in的那个线程
+                        waitForLogin.countDown();
+                    }
                 }
 
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
-                    ch.pipeline().addLast(loggingHandler);
+                    // ch.pipeline().addLast(loggingHandler);
                     ch.pipeline().addLast(messageCodec);
                     ch.pipeline().addLast("clientHandler",new ChannelInboundHandlerAdapter(){
                         // 在链接建立后会触发这个事件
@@ -63,15 +77,32 @@ public class ChatClient {
 
                                 System.out.println("等待后续操作");
                                 try {
-                                    int read = System.in.read();
-                                } catch (IOException e) {
+                                    waitForLogin.await();
+                                } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
+                                }
+                                // 如果登录失败了
+                                if(!login.get()){
+                                    ctx.channel().close();
+                                    return;
+                                }
+                                // 如果登录成功了 出现一个菜单
+                                while (true){
+                                    System.out.println("==================================");
+                                    System.out.println("send [username] [content]");
+                                    System.out.println("gsend [group name] [content]");
+                                    System.out.println("gcreate [group name] [m1,m2,m3...]");
+                                    System.out.println("gmembers [group name]");
+                                    System.out.println("gjoin [group name]");
+                                    System.out.println("gquit [group name]");
+                                    System.out.println("quit");
+                                    System.out.println("==================================");
+                                    Scanner scanner1 = new Scanner(System.in);
+                                    scanner1.nextLine();
                                 }
                             },"system in").start();
                         }
                     });
-
-
 
                 }
             });
