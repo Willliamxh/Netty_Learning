@@ -8,10 +8,15 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import itcast.message.RpcRequestMessage;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
+import itcast.protocol.SequenceIdGenerator;
 import itcast.server.handler.RpcResponseMessageHandler;
+import itcast.server.service.HelloService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.reflect.Proxy;
 
 /**
  * @author XuHan
@@ -19,12 +24,49 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class RPCClientManagerXH {
+    public static void main(String[] args) {
+        HelloService service = getProxyService(HelloService.class);
+        service.sayHello("hello！！！！");
+        service.sayHello("你好呀！！！！");
+        service.sayHello("哈哈哈哈哈哈！！！！");
+    }
+
+    /**
+     *
+     * @param serviceClass
+     * @return
+     * @param <T>
+     */
+    public static <T> T getProxyService(Class<T> serviceClass){
+        ClassLoader loader = serviceClass.getClassLoader();
+        Class<?>[] interfaces1 = serviceClass.getInterfaces();
+        Class<?>[] interfaces = new Class[]{serviceClass};
+        Object o = Proxy.newProxyInstance(loader, interfaces, (proxy, method, args) -> {
+            //1.将方法的调用转化为消息对象
+            RpcRequestMessage message = new RpcRequestMessage(
+                    SequenceIdGenerator.nextId(),
+                    serviceClass.getName(),
+                    method.getName(),
+                    // 返回值
+                    method.getReturnType(),
+                    // 参数类型
+                    method.getParameterTypes(),
+                    // 参数值
+                    args
+            );
+
+            //2.将消息对象发送出去
+            getChannel().writeAndFlush(message);
+            //3。暂时先返回一个null
+            return null;
+        });
+
+        return (T) o;
+    }
+
     private static Channel channel = null;
     private static final Object LOCK = new Object();
 
-    public static void main(String[] args) {
-        initChannel();
-    }
     //获取唯一的Channel对象
     public static Channel getChannel(){
         if(channel!=null){
