@@ -10,6 +10,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
+import itcast.server.handler.RpcRequestMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,7 +26,7 @@ public class RPCServerXh {
         MessageCodecShareable MESSAGE_CODEC = new MessageCodecShareable();
 
         // rpc 请求消息处理器，待实现
-        // RpcRequestMessageHandler RPC_HANDLER = new RpcRequestMessageHandler();
+        RpcRequestMessageHandler RPC_HANDLER = new RpcRequestMessageHandler();
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.channel(NioServerSocketChannel.class);
@@ -36,7 +37,7 @@ public class RPCServerXh {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
                     ch.pipeline().addLast(LOGGING_HANDLER);
                     ch.pipeline().addLast(MESSAGE_CODEC);
-                    // ch.pipeline().addLast(RPC_HANDLER);
+                    ch.pipeline().addLast(RPC_HANDLER);
                 }
             });
             Channel channel = serverBootstrap.bind(8080).sync().channel();
