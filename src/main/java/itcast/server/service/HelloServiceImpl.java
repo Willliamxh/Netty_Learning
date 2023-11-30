@@ -1,0 +1,12 @@
+package itcast.server.service;
+
+/**
+ * @author xuhan
+ */
+public class HelloServiceImpl implements HelloService {
+    @Override
+    public String sayHello(String msg) {
+        // int i = 1 / 0;
+        return "你好, " + msg;
+    }
+}
