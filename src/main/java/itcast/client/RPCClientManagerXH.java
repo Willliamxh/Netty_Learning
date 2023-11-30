@@ -39,7 +39,6 @@ public class RPCClientManagerXH {
      */
     public static <T> T getProxyService(Class<T> serviceClass){
         ClassLoader loader = serviceClass.getClassLoader();
-        Class<?>[] interfaces1 = serviceClass.getInterfaces();
         Class<?>[] interfaces = new Class[]{serviceClass};
         Object o = Proxy.newProxyInstance(loader, interfaces, (proxy, method, args) -> {
             //1.将方法的调用转化为消息对象
