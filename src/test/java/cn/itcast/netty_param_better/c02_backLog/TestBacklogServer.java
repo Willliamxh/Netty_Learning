@@ -1,4 +1,4 @@
-package cn.itcast.netty_param_better;
+package cn.itcast.netty_param_better.c02_backLog;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;

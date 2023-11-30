@@ -1,4 +1,4 @@
-package cn.itcast.netty_param_better;
+package cn.itcast.netty_param_better.c01_conn_timeout;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
