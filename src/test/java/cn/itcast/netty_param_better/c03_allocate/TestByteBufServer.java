@@ -1,7 +1,6 @@
 package cn.itcast.netty_param_better.c03_allocate;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
@@ -24,11 +23,11 @@ public class TestByteBufServer {
                         ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                               ByteBuf buf = ctx.alloc().buffer();
-                               log.debug("alloc buf {}", buf);
+                               // ByteBuf buf = ctx.alloc().buffer();
+                               // log.debug("alloc buf {}", buf);
 
-                                // log.debug("receive buf {}", msg);
-                                // System.out.println("");
+                                log.debug("receive buf {}", msg);
+                                System.out.println("");
                             }
                         });
                     }
