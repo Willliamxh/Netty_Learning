@@ -57,7 +57,7 @@ public class RPCClientManagerXH {
                     args
             );
 
-            //2.将消息对象发送出去
+            //2.将消息对象发送出去（我自己不调用，我发出去，调用别人）
             getChannel().writeAndFlush(message);
 
             //3 准备一个空的Promise对象（空书包）                     指定用Promise对象异步接收结果线程。就是如果我不想等，用addListener的时候会需要个线程
