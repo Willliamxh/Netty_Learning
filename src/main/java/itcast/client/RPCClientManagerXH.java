@@ -8,6 +8,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultPromise;
 import itcast.message.RpcRequestMessage;
 import itcast.protocol.MessageCodecShareable;
 import itcast.protocol.ProtocolFrameDecoder;
@@ -26,9 +27,9 @@ import java.lang.reflect.Proxy;
 public class RPCClientManagerXH {
     public static void main(String[] args) {
         HelloService service = getProxyService(HelloService.class);
-        service.sayHello("hello！！！！");
-        service.sayHello("你好呀！！！！");
-        service.sayHello("哈哈哈哈哈哈！！！！");
+        System.out.println(service.sayHello("hello！！！！"));
+        System.out.println(service.sayHello("你好呀！！！！"));
+        System.out.println(service.sayHello("哈哈哈哈哈哈！！！！"));
     }
 
     /**
@@ -41,9 +42,11 @@ public class RPCClientManagerXH {
         ClassLoader loader = serviceClass.getClassLoader();
         Class<?>[] interfaces = new Class[]{serviceClass};
         Object o = Proxy.newProxyInstance(loader, interfaces, (proxy, method, args) -> {
+
             //1.将方法的调用转化为消息对象
+            int sequenceId = SequenceIdGenerator.nextId();
             RpcRequestMessage message = new RpcRequestMessage(
-                    SequenceIdGenerator.nextId(),
+                    sequenceId,
                     serviceClass.getName(),
                     method.getName(),
                     // 返回值
@@ -56,8 +59,19 @@ public class RPCClientManagerXH {
 
             //2.将消息对象发送出去
             getChannel().writeAndFlush(message);
-            //3。暂时先返回一个null
-            return null;
+
+            //3 准备一个空的Promise对象（空书包）                     指定用Promise对象接收结果线程
+            DefaultPromise<Object> promise = new DefaultPromise<>(getChannel().eventLoop());
+            RpcResponseMessageHandler.PROMISES.put(sequenceId,promise);
+            //4.等待Promise结果 await不抛异常 syn抛异常
+            promise.await();
+            if(promise.isSuccess()){
+                //调用正常
+                return promise.getNow();
+            }else {
+                //调用异常
+                throw new RuntimeException(promise.cause());
+            }
         });
 
         return (T) o;
