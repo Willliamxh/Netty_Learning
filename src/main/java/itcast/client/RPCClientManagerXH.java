@@ -60,10 +60,13 @@ public class RPCClientManagerXH {
             //2.将消息对象发送出去
             getChannel().writeAndFlush(message);
 
-            //3 准备一个空的Promise对象（空书包）                     指定用Promise对象接收结果线程
+            //3 准备一个空的Promise对象（空书包）                     指定用Promise对象异步接收结果线程。就是如果我不想等，用addListener的时候会需要个线程
+                                                                //            promise.addListener(future -> {
+                                                                //                // 线程
+                                                                //            });
             DefaultPromise<Object> promise = new DefaultPromise<>(getChannel().eventLoop());
             RpcResponseMessageHandler.PROMISES.put(sequenceId,promise);
-            //4.等待Promise结果 await不抛异常 syn抛异常
+            //4.等待Promise结果 await不抛异常 syn抛异常（主线程一直在等）
             promise.await();
             if(promise.isSuccess()){
                 //调用正常
