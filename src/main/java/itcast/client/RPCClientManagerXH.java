@@ -28,8 +28,8 @@ public class RPCClientManagerXH {
     public static void main(String[] args) {
         HelloService service = getProxyService(HelloService.class);
         System.out.println(service.sayHello("hello！！！！"));
-        System.out.println(service.sayHello("你好呀！！！！"));
-        System.out.println(service.sayHello("哈哈哈哈哈哈！！！！"));
+        // System.out.println(service.sayHello("你好呀！！！！"));
+        // System.out.println(service.sayHello("哈哈哈哈哈哈！！！！"));
     }
 
     /**
